@@ -1394,6 +1394,13 @@ h1, h2, h3, h4, h5, h6 {
     grid-template-columns: 1fr;
     max-width: 800px;
     margin: 0 auto;
+}
+
+.about-grid.centered .about-text {
+    text-align: center;
+}
+
+.about-grid.centered .about-text p {
     text-align: center;
 }
 
