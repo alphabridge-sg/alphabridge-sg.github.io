@@ -163,49 +163,19 @@ function initContactForm() {
 
     if (!form) return;
 
-    form.addEventListener('submit', function(e) {
-        // Basic validation
-        const firstName = form.querySelector('#firstName').value.trim();
-        const lastName = form.querySelector('#lastName').value.trim();
-        const email = form.querySelector('#email').value.trim();
+    // Check if returning from successful Formspree submission
+    if (window.location.search.includes('submitted=true')) {
+        form.style.display = 'none';
+        formSuccess.classList.add('show');
+        return;
+    }
 
-        if (!firstName || !lastName || !email) {
-            e.preventDefault();
-            alert('Please fill in all required fields.');
-            return;
-        }
-
-        if (!isValidEmail(email)) {
-            e.preventDefault();
-            alert('Please enter a valid email address.');
-            return;
-        }
-
-        // If validation passes, submit to Formspree via fetch
-        e.preventDefault();
-
-        const formData = new FormData(form);
-
-        fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Accept': 'application/json'
-            }
-        })
-        .then(function(response) {
-            if (response.ok) {
-                form.style.display = 'none';
-                formSuccess.classList.add('show');
-                form.reset();
-            } else {
-                alert('There was a problem submitting the form. Please try again.');
-            }
-        })
-        .catch(function(error) {
-            alert('There was a problem submitting the form. Please try again.');
-        });
-    });
+    // Add hidden field to redirect back with success parameter
+    const redirectInput = document.createElement('input');
+    redirectInput.type = 'hidden';
+    redirectInput.name = '_next';
+    redirectInput.value = window.location.href.split('?')[0] + '?submitted=true';
+    form.appendChild(redirectInput);
 }
 
 /**
