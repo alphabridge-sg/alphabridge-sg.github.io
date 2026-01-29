@@ -1,13 +1,17 @@
 /**
  * Alphabridge Website - Main JavaScript
+ * Single-scroll design with accordion and smooth navigation
  */
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all modules
     initNavigation();
+    initSmoothScroll();
     initAnimations();
     initStats();
+    initAccordion();
     initContactForm();
+    initActiveNavHighlight();
 });
 
 /**
@@ -58,11 +62,67 @@ function initNavigation() {
         window.addEventListener('scroll', function() {
             if (window.scrollY > 50) {
                 navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.1)';
+                navbar.style.backgroundColor = 'rgba(249, 247, 242, 0.98)';
             } else {
                 navbar.style.boxShadow = '';
+                navbar.style.backgroundColor = '';
             }
         });
     }
+}
+
+/**
+ * Smooth Scroll for Anchor Links
+ */
+function initSmoothScroll() {
+    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+        anchor.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href === '#') return;
+
+            e.preventDefault();
+            const target = document.querySelector(href);
+            if (target) {
+                const navbarHeight = document.querySelector('.navbar').offsetHeight;
+                const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navbarHeight;
+
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+}
+
+/**
+ * Active Navigation Highlight on Scroll
+ */
+function initActiveNavHighlight() {
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    function highlightNav() {
+        const scrollPosition = window.scrollY + 100;
+
+        sections.forEach(function(section) {
+            const sectionTop = section.offsetTop - 100;
+            const sectionHeight = section.offsetHeight;
+            const sectionId = section.getAttribute('id');
+
+            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                navLinks.forEach(function(link) {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + sectionId) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }
+
+    window.addEventListener('scroll', highlightNav);
+    highlightNav(); // Run on load
 }
 
 /**
@@ -155,6 +215,38 @@ function initStats() {
 }
 
 /**
+ * Services Accordion
+ */
+function initAccordion() {
+    const accordionItems = document.querySelectorAll('.service-accordion-item');
+
+    if (accordionItems.length === 0) return;
+
+    // Open first item by default
+    accordionItems[0].classList.add('active');
+
+    accordionItems.forEach(function(item) {
+        const header = item.querySelector('.service-accordion-header');
+
+        header.addEventListener('click', function() {
+            const isActive = item.classList.contains('active');
+
+            // Close all items
+            accordionItems.forEach(function(otherItem) {
+                otherItem.classList.remove('active');
+                otherItem.querySelector('.service-accordion-header').setAttribute('aria-expanded', 'false');
+            });
+
+            // Open clicked item if it wasn't already active
+            if (!isActive) {
+                item.classList.add('active');
+                header.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
+}
+
+/**
  * Contact Form Handling
  */
 function initContactForm() {
@@ -167,6 +259,11 @@ function initContactForm() {
     if (window.location.search.includes('submitted=true')) {
         form.style.display = 'none';
         formSuccess.classList.add('show');
+
+        // Clean URL
+        if (window.history.replaceState) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
         return;
     }
 
@@ -185,22 +282,3 @@ function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
-
-/**
- * Smooth scroll for anchor links
- */
-document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
-    anchor.addEventListener('click', function(e) {
-        const href = this.getAttribute('href');
-        if (href === '#') return;
-
-        e.preventDefault();
-        const target = document.querySelector(href);
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
